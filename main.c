@@ -911,7 +911,7 @@ void doPerspective()
     ww = (float)winw;
     wh = (float)winh;
     mIdent(&projection);
-    mPerspective(&projection, 60.0f, ww / wh, 0.01f, 333.f);
+    mPerspective(&projection, 60.0f, ww / wh, 0.01f, 150.f);
     glUniformMatrix4fv(projection_id, 1, GL_FALSE, (float*)&projection.m[0][0]);
 }
 EM_BOOL emscripten_resize_event(int eventType, const EmscriptenUiEvent *uiEvent, void *userData)
@@ -1048,9 +1048,24 @@ void main_loop()
 
                 if(event.button.button == SDL_BUTTON_LEFT)
                 {
-                    voxels[num_voxels].id = sb;
-                    voxels[num_voxels].pos = pb;
-                    num_voxels++;
+                    if(num_voxels < max_voxels)
+                    {
+                        voxels[num_voxels].id = sb;
+                        voxels[num_voxels].pos = pb;
+                        num_voxels++;
+                    }
+                    else
+                    {
+                        for(uint i = 0; i < max_voxels; i++)
+                        {
+                            if(voxels[i].id < 0.f)
+                            {
+                                voxels[i].id = sb;
+                                voxels[i].pos = pb;
+                                break;
+                            }
+                        }
+                    }
                 }
                 else if(event.button.button == SDL_BUTTON_RIGHT)
                 {
@@ -1335,7 +1350,7 @@ int main(int argc, char** argv)
     glDisable(GL_BLEND);
     //glDisable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.3f, 0.745f, 0.8863f, 0.0f);
+    glClearColor(0.f, 0.f, 0.f, 0.0f);
 
     shadeLambertT(&position_id, &projection_id, &modelview_id, &lightpos_id, &normal_id, &texcoord_id, &texoffset_id, &sampler_id, &opacity_id);
     glUniformMatrix4fv(projection_id, 1, GL_FALSE, (float*)&projection.m[0][0]);
