@@ -890,13 +890,10 @@ uint is_zeroish(const float x, const float y)
 {
     return (x > -1.f && x < 1.f && y > -1.f && y < 1.f);
 }
-float frust_dist = 1.f;
 uint insideFrustum(const float x, const float y, const float z)
 {
     const float xm = x+pp.x, ym = y+pp.y, zm = z+pp.z;
-    if(xm*xm + ym*ym + zm*zm > frust_dist) // check the distance
-        return (xm*look_dir.x) + (ym*look_dir.y) + (zm*look_dir.z) > 0.f; // check the angle
-    return 1;
+    return (xm*look_dir.x) + (ym*look_dir.y) + (zm*look_dir.z) > 0.f; // check the angle
 }
 
 //*************************************
@@ -1226,7 +1223,6 @@ void main_loop()
             diff.x = 0.f;
             diff.y = 0.f;
         }
-
         diff.x = roundf(diff.x);
         diff.y = roundf(diff.y);
         diff.z = roundf(diff.z);
