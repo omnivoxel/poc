@@ -1336,20 +1336,25 @@ int main(int argc, char** argv)
 //*************************************
 // setup render context / window
 //*************************************
+
+    // allow custom msaa level
+    int msaa = 16;
+    if(argc >= 2){msaa = atoi(argv[1]);}
+
+    // help
     printf("OmniVoxel\n\n");
     
+    // setup
     if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_EVENTS) < 0) //SDL_INIT_AUDIO
     {
         printf("ERROR: SDL_Init(): %s\n", SDL_GetError());
         return 1;
     }
-    // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-    // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     wnd = SDL_CreateWindow(appTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, winw, winh, SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
-    if(wnd == NULL)
+    while(wnd == NULL)
     {
         printf("ERROR: SDL_CreateWindow(): %s\n", SDL_GetError());
         return 1;
