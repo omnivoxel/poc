@@ -7,7 +7,6 @@
     Colour Converter: https://www.easyrgb.com
 
     Omni Voxel Render / Build test.
-
 */
 
 #pragma GCC diagnostic ignored "-Wtrigraphs"
@@ -1198,25 +1197,30 @@ void main_loop()
         vec diff;
         vSub(&diff, ipp, ep);
         vNorm(&diff);
+
+        vec fd = diff;
+        fd.x = fabs(diff.x);
+        fd.y = fabs(diff.y);
+        fd.z = fabs(diff.z);
+        if(fd.x > fd.y && fd.x > fd.z)
+        {
+            diff.y = 0.f;
+            diff.z = 0.f;
+        }
+        else if(fd.y > fd.x && fd.y > fd.z)
+        {
+            diff.x = 0.f;
+            diff.z = 0.f;
+        }
+        else if(fd.z > fd.x && fd.z > fd.y)
+        {
+            diff.x = 0.f;
+            diff.y = 0.f;
+        }
+
         diff.x = roundf(diff.x);
         diff.y = roundf(diff.y);
         diff.z = roundf(diff.z);
-
-        if(diff.x > diff.y && diff.x > diff.z)
-        {
-            diff.y = 0.f;
-            diff.z = 0.f;
-        }
-        else if(diff.y > diff.x && diff.y > diff.z)
-        {
-            diff.x = 0.f;
-            diff.z = 0.f;
-        }
-        else if(diff.z > diff.x && diff.z > diff.y)
-        {
-            diff.x = 0.f;
-            diff.y = 0.f;
-        }
 
         //printf("%f - %f %f %f\n", vSumAbs(diff), diff.x, diff.y, diff.z);
 
