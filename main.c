@@ -864,7 +864,7 @@ uint ray(vec* ep, const uint depth, const float stepsize, const vec start_pos)
     vMulS(&inc, look_dir, stepsize);
     uint hit = 0;
     vec rp = start_pos;
-    for(int i = 0; i < depth; i++)
+    for(uint i = 0; i < depth; i++)
     {
         vAdd(&rp, rp, inc);
         vec rb;
@@ -1204,7 +1204,7 @@ void main_loop()
     vec ipp = pp;
     vInv(&ipp);
     vec ep;
-    if(ray(&ep, 100, 0.5f, ipp) == 1)
+    if(ray(&ep, 100, 1.f, ipp) == 1)
     {
         vec diff;
         vSub(&diff, ipp, ep);
