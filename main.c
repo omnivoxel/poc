@@ -816,6 +816,7 @@ vec pp = (vec){0.f, 4.f, 0.f}; // player position
 float cx=0.f,cy=0.f; // grid cell location
 float move_speed = 6.3f;
 vec pb; // place block pos
+float sb; // selected block
 
 // render state id's
 GLint projection_id;
@@ -851,15 +852,15 @@ typedef struct
     float id; //unsigned char id;
     vec pos;
 } voxel;
-#define max_voxels 4096
+#define max_voxels 2048
 uint num_voxels = 0;
-voxel voxels[4096] = {0};
+voxel voxels[max_voxels] = {0};
 
-uint ray(vec* ep, const uint depth, const float stepsize, const vec start_pos)
+int ray(vec* ep, const uint depth, const float stepsize, const vec start_pos)
 {
     vec inc;
     vMulS(&inc, look_dir, stepsize);
-    uint hit = 0;
+    int hit = -1;
     vec rp = start_pos;
     for(uint i = 0; i < depth; i++)
     {
@@ -870,14 +871,15 @@ uint ray(vec* ep, const uint depth, const float stepsize, const vec start_pos)
         rb.z = roundf(rp.z);
         for(int j = 0; j < num_voxels; j++)
         {
+            if(voxels[j].id < 0.f){continue;}
             if(rb.x == voxels[j].pos.x && rb.y == voxels[j].pos.y && rb.z == voxels[j].pos.z)
             {
                 *ep = voxels[j].pos;
-                hit = 1;
+                hit = j;
                 break;
             }
         }
-        if(hit == 1){break;}
+        if(hit > -1){break;}
     }
     return hit;
 }
@@ -1020,6 +1022,21 @@ void main_loop()
             }
             break;
 
+            case SDL_MOUSEWHEEL:
+            {
+                if(event.wheel.y > 0)
+                {
+                    sb += 1.f;
+                    if(sb > 30.f){sb = 30.f;}
+                }
+                else if(event.wheel.y < 0)
+                {
+                    sb -= 1.f;
+                    if(sb < 0.f){sb = 0.f;}
+                }
+            }
+            break;
+
             case SDL_MOUSEBUTTONDOWN:
             {
                 if(istouch == 1){break;}
@@ -1031,11 +1048,19 @@ void main_loop()
 
                 if(event.button.button == SDL_BUTTON_LEFT)
                 {
-                    voxels[num_voxels].id = 13.f;
+                    voxels[num_voxels].id = sb;
                     voxels[num_voxels].pos = pb;
                     num_voxels++;
                 }
                 else if(event.button.button == SDL_BUTTON_RIGHT)
+                {
+                    vec ipp = pp;
+                    vInv(&ipp);
+                    vec pb;
+                    const int b = ray(&pb, 100, 1.f, ipp);
+                    if(b > 0){voxels[b].id = -1.f;} // no deleting the core block
+                }
+                else if(event.button.button == SDL_BUTTON_MIDDLE)
                 {
                     sens = 0.003f;
                     md = 1;
@@ -1182,6 +1207,7 @@ void main_loop()
     // render voxels
     for(int j = 1; j < num_voxels; j++)
     {
+        if(voxels[j].id < 0.f){continue;}
         glUniform1f(texoffset_id, voxels[j].id);
         mIdent(&model);
         mSetPos(&model, voxels[j].pos);
@@ -1191,12 +1217,12 @@ void main_loop()
     }
 
     // selected node
-    glUniform1f(texoffset_id, 13.f);
+    glUniform1f(texoffset_id, sb);
 
     // targeting voxel
     vec ipp = pp;
     vInv(&ipp);
-    if(ray(&pb, 100, 1.f, ipp) == 1)
+    if(ray(&pb, 100, 1.f, ipp) > -1)
     {
         vec diff;
         vSub(&diff, ipp, pb);
@@ -1337,11 +1363,11 @@ int main(int argc, char** argv)
     // TEST VOXELS
     voxels[0].pos = (vec){0.f, 0.f, 0.f};
     voxels[0].id = 13.f;
-    voxels[1].pos = (vec){-1.f, 1.f, 0.f};
+    voxels[1].pos = (vec){1.f, 1.f, 0.f};
     voxels[1].id = 13.f;
-    voxels[2].pos = (vec){-1.f, -1.f, 0.f};
+    voxels[2].pos = (vec){1.f, -1.f, 0.f};
     voxels[2].id = 13.f;
-    voxels[3].pos = (vec){-1.f, 0.f, 0.f};
+    voxels[3].pos = (vec){1.f, 0.f, 0.f};
     voxels[3].id = 13.f;
     num_voxels = 4;
     
