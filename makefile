@@ -7,6 +7,3 @@ run:
 
 release: all
 	emrun --browser chrome bin/index.html
-
-
-	
