@@ -1077,6 +1077,7 @@ void main_loop()
                 }
                 else if(event.button.button == SDL_BUTTON_MIDDLE)
                 {
+                    pb = (vec){0.f, 0.f, 0.f};
                     sens = 0.003f;
                     md = 1;
                 }
@@ -1237,10 +1238,11 @@ void main_loop()
     // targeting voxel
     vec ipp = pp;
     vInv(&ipp);
-    if(ray(&pb, 100, 1.f, ipp) > -1)
+    vec rp = pb;
+    if(ray(&rp, 100, 1.f, ipp) > -1)
     {
         vec diff;
-        vSub(&diff, ipp, pb);
+        vSub(&diff, ipp, rp);
         vNorm(&diff);
 
         vec fd = diff;
@@ -1267,26 +1269,47 @@ void main_loop()
         diff.y = roundf(diff.y);
         diff.z = roundf(diff.z);
 
-        pb.x += diff.x;
-        pb.y += diff.y;
-        pb.z += diff.z;
+        rp.x += diff.x;
+        rp.y += diff.y;
+        rp.z += diff.z;
 
         //printf("%f - %f %f %f\n", vSumAbs(diff), diff.x, diff.y, diff.z);
 
         if(vSumAbs(diff) == 1.f)
         {
-            mIdent(&model);
-            mSetPos(&model, (vec){pb.x, pb.y, pb.z});
-            mScale(&model, 0.5f, 0.5f, 0.5f);
-            mMul(&modelview, &model, &view);
-            glUniformMatrix4fv(modelview_id, 1, GL_FALSE, (float*)&modelview.m[0][0]);
-            glDrawElements(GL_TRIANGLES, voxel_numind, GL_UNSIGNED_BYTE, 0);
+            uint rpif = 1;
+            for(int i = 0; i < num_voxels; i++)
+            {
+                if(voxels[i].id < 0.f){continue;}
+
+                if(rp.x == voxels[i].pos.x && rp.y == voxels[i].pos.y && rp.z == voxels[i].pos.z)
+                {
+                    rpif = 0;
+                    break;
+                }
+            }
+            if(rpif == 1){pb = rp;}
         }
     }
-    else
+
+    if(vSumAbs(pb) > 0.f)
     {
-        pb = (vec){0.f, 0.f, 0.f};
+        mIdent(&model);
+        mSetPos(&model, (vec){pb.x, pb.y, pb.z});
+        mScale(&model, 0.5f, 0.5f, 0.5f);
+        mMul(&modelview, &model, &view);
+        glUniformMatrix4fv(modelview_id, 1, GL_FALSE, (float*)&modelview.m[0][0]);
+        glDrawElements(GL_TRIANGLES, voxel_numind, GL_UNSIGNED_BYTE, 0);
     }
+
+    // crosshair voxel
+    mIdent(&model);
+    mSetPos(&model, (vec){0.f, 0.f, -0.1f});
+    mScale(&model, 0.0006f, 0.0006f, 0.0006f);
+    glUniform1f(texoffset_id, 20.f);
+    glUniformMatrix4fv(modelview_id, 1, GL_FALSE, (float*)&model.m[0][0]);
+    glDrawElements(GL_TRIANGLES, voxel_numind, GL_UNSIGNED_BYTE, 0);
+    glEnable(GL_DEPTH_TEST);
 
 //*************************************
 // swap buffers / display render
@@ -1339,6 +1362,7 @@ int main(int argc, char** argv)
 //*************************************
 // compile & link shader program
 //*************************************
+
     makeLambertT(); // textured lambertian
 
 //*************************************
