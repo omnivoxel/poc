@@ -799,14 +799,13 @@ Uint32 winw = 1024, winh = 768;
 float ww, wh;
 float aspect, t = 0.f;
 uint ks[10] = {0}; // keystate
-uint istouch = 0;
 
 // camera vars
-float sens = 0.003f;
+float sens = 0.004f;
 float xrot = 0.f;
 float yrot = 1.5f;
-// float ddist = 32.f; // draw distance
-// float ddist2 = 1024.f; // draw distance squared
+float ddist = 150.f; // draw distance
+float ddist2 = 22500.f; // draw distance squared
 vec look_dir; // camera look direction
 
 // player vars
@@ -891,14 +890,14 @@ uint is_zeroish(const float x, const float y)
 {
     return (x > -1.f && x < 1.f && y > -1.f && y < 1.f);
 }
-// float frust_dist = 18.f;
-// uint insideFrustum(const float x, const float y)
-// {
-//     const float xm = x+pp.x, ym = y+pp.y;
-//     if(xm*xm + ym*ym > frust_dist) // check the distance
-//         return (xm*look_dir.x) + (ym*look_dir.y) > 0.f; // check the angle
-//     return 1;
-// }
+float frust_dist = 1.f;
+uint insideFrustum(const float x, const float y, const float z)
+{
+    const float xm = x+pp.x, ym = y+pp.y, zm = z+pp.z;
+    if(xm*xm + ym*ym + zm*zm > frust_dist) // check the distance
+        return (xm*look_dir.x) + (ym*look_dir.y) + (zm*look_dir.z) > 0.f; // check the angle
+    return 1;
+}
 
 //*************************************
 // gl functions
@@ -936,52 +935,6 @@ void main_loop()
     {
         switch(event.type)
         {
-            case SDL_FINGERDOWN:
-            {
-                if(istouch == 0)
-                {
-                    istouch = 1;
-                    break;
-                }
-                if(event.tfinger.x > 0.5f) // look side
-                {
-                    lx = event.tfinger.x * winw;
-                    ly = event.tfinger.y * winh;
-                    mx = lx;
-                    my = ly;
-                    sens = 0.006f;
-                }
-                else // move side
-                {
-                    tsx = event.tfinger.x;
-                    tsy = event.tfinger.y;
-                }
-            }
-            break;
-
-            case SDL_FINGERUP:
-            {
-                if(event.tfinger.x < 0.5f){tsx=0, tsy=0, tdx=0.f, tdy=0.f;}
-            }
-            break;
-
-            case SDL_FINGERMOTION:
-            {
-                if(event.tfinger.x > 0.5f)
-                {
-                    mx = event.tfinger.x * ww;
-                    my = event.tfinger.y * wh;
-                }
-                else if(tsx != 0.f && tsy != 0.f)
-                {
-                    tdx = tsx-event.tfinger.x;
-                    tdy = tsy-event.tfinger.y;
-                    if(fabsf(tdx) < 0.001f){tdx = 0.f;}
-                    if(fabsf(tdy) < 0.001f){tdy = 0.f;}
-                }
-            }
-            break;
-
             case SDL_KEYDOWN:
             {
                 if(event.key.keysym.sym == SDLK_w){ks[0] = 1;}
@@ -1031,8 +984,6 @@ void main_loop()
 
             case SDL_MOUSEBUTTONDOWN:
             {
-                if(istouch == 1){break;}
-
                 lx = event.button.x;
                 ly = event.button.y;
                 mx = event.button.x;
@@ -1069,7 +1020,6 @@ void main_loop()
                 else if(event.button.button == SDL_BUTTON_MIDDLE)
                 {
                     pb = (vec){0.f, 0.f, 0.f};
-                    sens = 0.003f;
                     md = 1;
                 }
             }
@@ -1077,7 +1027,6 @@ void main_loop()
 
             case SDL_MOUSEMOTION:
             {
-                if(istouch == 1){break;}
                 if(md > 0)
                 {
                     mx = event.motion.x;
@@ -1088,7 +1037,6 @@ void main_loop()
 
             case SDL_MOUSEBUTTONUP:
             {
-                if(istouch == 1){break;}
                 md = 0;
             }
             break;
@@ -1234,7 +1182,10 @@ void main_loop()
     // render voxels
     for(int j = 1; j < num_voxels; j++)
     {
-        if(voxels[j].id < 0.f){continue;}
+        if(voxels[j].id < 0.f || 
+            vDistSq(pp, voxels[j].pos) >= ddist2 ||
+            insideFrustum(voxels[j].pos.x, voxels[j].pos.y, voxels[j].pos.z) == 0){continue;}
+
         glUniform1f(texoffset_id, voxels[j].id);
         mIdent(&model);
         mSetPos(&model, voxels[j].pos);
