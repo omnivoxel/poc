@@ -3,7 +3,7 @@
     James William Fletcher (github.com/mrbid)
         July 2023
 --------------------------------------------------
-    Emscripten / C & SDL / OpenGL ES2 / GLSL ES
+    C & SDL / OpenGL ES2 / GLSL ES
     Colour Converter: https://www.easyrgb.com
 
     Omni Voxel Render / Build test.
@@ -778,14 +778,12 @@ const unsigned char tiles[] = { // 496, 16
   "d\013~\177\016wx\015wx\015|~\015qs\014jl\014",
 };
 
-#include <emscripten.h>
-#include <emscripten/html5.h>
 #include <time.h>
 
-#include <SDL.h>
-#include <SDL_opengles2.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengles2.h>
 
-#include "esAux4.h"
+#include "inc/esAux4.h"
 
 #define uint GLuint
 #define sint GLint
@@ -797,7 +795,7 @@ const unsigned char tiles[] = { // 496, 16
 const char appTitle[] = "OmniVoxel";
 SDL_Window* wnd;
 SDL_GLContext glc;
-Uint32 winw = 0, winh = 0;
+Uint32 winw = 1024, winh = 768;
 float ww, wh;
 float aspect, t = 0.f;
 uint ks[10] = {0}; // keystate
@@ -903,7 +901,7 @@ uint is_zeroish(const float x, const float y)
 // }
 
 //*************************************
-// emscripten/gl functions
+// gl functions
 //*************************************
 void doPerspective()
 {
@@ -913,14 +911,6 @@ void doPerspective()
     mIdent(&projection);
     mPerspective(&projection, 60.0f, ww / wh, 0.01f, 150.f);
     glUniformMatrix4fv(projection_id, 1, GL_FALSE, (float*)&projection.m[0][0]);
-}
-EM_BOOL emscripten_resize_event(int eventType, const EmscriptenUiEvent *uiEvent, void *userData)
-{
-    winw = uiEvent->documentBodyClientWidth;
-    winh = uiEvent->documentBodyClientHeight;
-    doPerspective();
-    emscripten_set_canvas_element_size("canvas", winw, winh);
-    return EM_FALSE;
 }
 
 //*************************************
@@ -1027,11 +1017,13 @@ void main_loop()
                 if(event.wheel.y > 0)
                 {
                     sb += 1.f;
+                    if(sb == 10.f){sb++;}
                     if(sb > 30.f){sb = 30.f;}
                 }
                 else if(event.wheel.y < 0)
                 {
                     sb -= 1.f;
+                    if(sb == 10.f){sb--;}
                     if(sb < 0.f){sb = 0.f;}
                 }
             }
@@ -1073,58 +1065,6 @@ void main_loop()
                     vInv(&ipp);
                     const int b = ray(&pb, 100, 1.f, ipp);
                     if(b > 0){voxels[b].id = -1.f;}
-                    // vec rp = pb;
-                    // if(b > 0)
-                    // {
-                    //     vec diff;
-                    //     vSub(&diff, ipp, rp);
-                    //     vNorm(&diff);
-
-                    //     vec fd = diff;
-                    //     fd.x = fabs(diff.x);
-                    //     fd.y = fabs(diff.y);
-                    //     fd.z = fabs(diff.z);
-                    //     if(fd.x > fd.y && fd.x > fd.z)
-                    //     {
-                    //         diff.y = 0.f;
-                    //         diff.z = 0.f;
-                    //     }
-                    //     else if(fd.y > fd.x && fd.y > fd.z)
-                    //     {
-                    //         diff.x = 0.f;
-                    //         diff.z = 0.f;
-                    //     }
-                    //     else if(fd.z > fd.x && fd.z > fd.y)
-                    //     {
-                    //         diff.x = 0.f;
-                    //         diff.y = 0.f;
-                    //     }
-
-                    //     diff.x = roundf(diff.x);
-                    //     diff.y = roundf(diff.y);
-                    //     diff.z = roundf(diff.z);
-
-                    //     rp.x += diff.x;
-                    //     rp.y += diff.y;
-                    //     rp.z += diff.z;
-
-                    //     if(vSumAbs(diff) == 1.f)
-                    //     {
-                    //         uint rpif = 1;
-                    //         for(int i = 0; i < num_voxels; i++)
-                    //         {
-                    //             if(voxels[i].id < 0.f){continue;}
-
-                    //             if(rp.x == voxels[i].pos.x && rp.y == voxels[i].pos.y && rp.z == voxels[i].pos.z)
-                    //             {
-                    //                 voxels[i].id = -1.f;
-                    //                 rpif = 0;
-                    //                 break;
-                    //             }
-                    //         }
-                    //         if(rpif == 1){voxels[b].id = -1.f;}
-                    //     }
-                    // }
                 }
                 else if(event.button.button == SDL_BUTTON_MIDDLE)
                 {
@@ -1150,6 +1090,26 @@ void main_loop()
             {
                 if(istouch == 1){break;}
                 md = 0;
+            }
+            break;
+
+            case SDL_WINDOWEVENT:
+            {
+                if(event.window.event == SDL_WINDOWEVENT_RESIZED)
+                {
+                    winw = event.window.data1;
+                    winh = event.window.data2;
+                    doPerspective();
+                }
+            }
+            break;
+
+            case SDL_QUIT:
+            {
+                SDL_GL_DeleteContext(glc);
+                SDL_DestroyWindow(wnd);
+                SDL_Quit();
+                exit(0);
             }
             break;
         }
@@ -1378,19 +1338,31 @@ int main(int argc, char** argv)
 //*************************************
     printf("OmniVoxel\n\n");
     
-    SDL_Init(SDL_INIT_VIDEO|SDL_INIT_EVENTS);
-
-    double width, height;
-    emscripten_get_element_css_size("body", &width, &height);
-    winw = (Uint32)width, winh = (Uint32)height;
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16);
-    wnd = SDL_CreateWindow(appTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, winw, winh, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
-    SDL_GL_SetSwapInterval(0);
+    if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_EVENTS) < 0) //SDL_INIT_AUDIO
+    {
+        printf("ERROR: SDL_Init(): %s\n", SDL_GetError());
+        return 1;
+    }
+    // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    wnd = SDL_CreateWindow(appTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, winw, winh, SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+    if(wnd == NULL)
+    {
+        printf("ERROR: SDL_CreateWindow(): %s\n", SDL_GetError());
+        return 1;
+    }
+    SDL_GL_SetSwapInterval(1);
     glc = SDL_GL_CreateContext(wnd);
-    SDL_ShowCursor(0);
+    if(glc == NULL)
+    {
+        printf("ERROR: SDL_GL_CreateContext(): %s\n", SDL_GetError());
+        return 1;
+    }
+    //SDL_ShowCursor(0);
     //SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
-    //glDisableVertexAttribArray(1); // seems to be a bug in emscripten?
 
     // seed random
     srand(time(0));
@@ -1475,7 +1447,7 @@ int main(int argc, char** argv)
 //*************************************
 // execute update / render loop
 //*************************************
-    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, EM_FALSE, emscripten_resize_event);
-    emscripten_set_main_loop(main_loop, 0, 1);
+
+    while(1){main_loop();}
     return 0;
 }
