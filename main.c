@@ -812,9 +812,10 @@ float yrot = 1.5f;
 vec look_dir; // camera look direction
 
 // player vars
-vec pp = (vec){0.f, 0.f, 0.f}; // player position
+vec pp = (vec){0.f, 4.f, 0.f}; // player position
 float cx=0.f,cy=0.f; // grid cell location
-float move_speed = 3.6f;
+float move_speed = 6.3f;
+vec pb; // place block pos
 
 // render state id's
 GLint projection_id;
@@ -847,7 +848,7 @@ const GLsizeiptr voxel_numvert = 24;
 ESModel mdlVoxel;
 typedef struct
 {
-    unsigned char id;
+    float id; //unsigned char id;
     vec pos;
 } voxel;
 #define max_voxels 4096
@@ -1030,8 +1031,9 @@ void main_loop()
 
                 if(event.button.button == SDL_BUTTON_LEFT)
                 {
-                    sens = 0.001f;
-                    md = 1;
+                    voxels[num_voxels].id = 13.f;
+                    voxels[num_voxels].pos = pb;
+                    num_voxels++;
                 }
                 else if(event.button.button == SDL_BUTTON_RIGHT)
                 {
@@ -1173,7 +1175,7 @@ void main_loop()
 //*************************************
 
     // starting/center voxel
-    glUniform1f(texoffset_id, 0.f);
+    glUniform1f(texoffset_id, 13.f);
     glUniformMatrix4fv(modelview_id, 1, GL_FALSE, (float*)&view.m[0][0]);
     glDrawElements(GL_TRIANGLES, voxel_numind, GL_UNSIGNED_BYTE, 0);
 
@@ -1188,14 +1190,16 @@ void main_loop()
         glDrawElements(GL_TRIANGLES, voxel_numind, GL_UNSIGNED_BYTE, 0);
     }
 
+    // selected node
+    glUniform1f(texoffset_id, 13.f);
+
     // targeting voxel
     vec ipp = pp;
     vInv(&ipp);
-    vec ep;
-    if(ray(&ep, 100, 1.f, ipp) == 1)
+    if(ray(&pb, 100, 1.f, ipp) == 1)
     {
         vec diff;
-        vSub(&diff, ipp, ep);
+        vSub(&diff, ipp, pb);
         vNorm(&diff);
 
         vec fd = diff;
@@ -1222,17 +1226,24 @@ void main_loop()
         diff.y = roundf(diff.y);
         diff.z = roundf(diff.z);
 
+        pb.x += diff.x;
+        pb.y += diff.y;
+        pb.z += diff.z;
+
         //printf("%f - %f %f %f\n", vSumAbs(diff), diff.x, diff.y, diff.z);
 
         if(vSumAbs(diff) == 1.f)
         {
-            glUniform1f(texoffset_id, 0.f);
             mIdent(&model);
-            mSetPos(&model, (vec){ep.x + diff.x, ep.y + diff.y, ep.z + diff.z});
+            mSetPos(&model, (vec){pb.x, pb.y, pb.z});
             mMul(&modelview, &model, &view);
             glUniformMatrix4fv(modelview_id, 1, GL_FALSE, (float*)&modelview.m[0][0]);
             glDrawElements(GL_TRIANGLES, voxel_numind, GL_UNSIGNED_BYTE, 0);
         }
+    }
+    else
+    {
+        pb = (vec){0.f, 0.f, 0.f};
     }
 
 //*************************************
@@ -1324,14 +1335,24 @@ int main(int argc, char** argv)
 
     // TEST VOXELS
     voxels[0].pos = (vec){0.f, 0.f, 0.f};
-    voxels[1].pos = (vec){1.f, 0.f, 0.f};
-    voxels[2].pos = (vec){2.f, 0.f, 0.f};
-    voxels[3].pos = (vec){3.f, 0.f, 0.f};
-    voxels[4].pos = (vec){4.f, 0.f, 0.f};
-    voxels[5].pos = (vec){5.f, 0.f, 0.f};
-    voxels[6].pos = (vec){6.f, 0.f, 0.f};
-    num_voxels = 7;
-    for(int i = 0; i < num_voxels; i++){voxels[i].id = rand()%8;}
+    voxels[0].id = 13.f;
+    voxels[1].pos = (vec){0.f, -1.f, 0.f};
+    voxels[1].id = 13.f;
+    voxels[2].pos = (vec){1.f, -1.f, 0.f};
+    voxels[2].id = 13.f;
+    voxels[3].pos = (vec){-1.f, -1.f, 0.f};
+    voxels[3].id = 13.f;
+    num_voxels = 4;
+    
+    // voxels[0].pos = (vec){0.f, 0.f, 0.f};
+    // voxels[1].pos = (vec){1.f, 0.f, 0.f};
+    // voxels[2].pos = (vec){2.f, 0.f, 0.f};
+    // voxels[3].pos = (vec){3.f, 0.f, 0.f};
+    // voxels[4].pos = (vec){4.f, 0.f, 0.f};
+    // voxels[5].pos = (vec){5.f, 0.f, 0.f};
+    // voxels[6].pos = (vec){6.f, 0.f, 0.f};
+    // num_voxels = 7;
+    // for(int i = 0; i < num_voxels; i++){voxels[i].id = rand()%8;}
 
 //*************************************
 // execute update / render loop
