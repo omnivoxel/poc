@@ -8,10 +8,6 @@
 
     Omni Voxel Render / Build test.
 
-    Notes:
-    - no way to shift the tex coord atm
-    - pointed face finding could be better
-
 */
 
 #pragma GCC diagnostic ignored "-Wtrigraphs"
@@ -830,6 +826,7 @@ GLint color_id;
 GLint opacity_id;
 GLint normal_id;
 GLint texcoord_id;
+GLint texoffset_id;
 GLint sampler_id;
 
 // render state matrices
@@ -1177,22 +1174,14 @@ void main_loop()
 //*************************************
 
     // starting/center voxel
+    glUniform1f(texoffset_id, 0.f);
     glUniformMatrix4fv(modelview_id, 1, GL_FALSE, (float*)&view.m[0][0]);
     glDrawElements(GL_TRIANGLES, voxel_numind, GL_UNSIGNED_BYTE, 0);
-
-    // TEST VOXELS
-    voxels[0].pos = (vec){0.f, 0.f, 0.f};
-    voxels[1].pos = (vec){1.f, 0.f, 0.f};
-    voxels[2].pos = (vec){2.f, 0.f, 0.f};
-    voxels[3].pos = (vec){3.f, 0.f, 0.f};
-    voxels[4].pos = (vec){4.f, 0.f, 0.f};
-    voxels[5].pos = (vec){5.f, 0.f, 0.f};
-    voxels[6].pos = (vec){6.f, 0.f, 0.f};
-    num_voxels = 7;
 
     // render voxels
     for(int j = 1; j < num_voxels; j++)
     {
+        glUniform1f(texoffset_id, voxels[j].id);
         mIdent(&model);
         mSetPos(&model, voxels[j].pos);
         mMul(&modelview, &model, &view);
@@ -1216,6 +1205,7 @@ void main_loop()
         //printf("%f - %f %f %f\n", vSumAbs(diff), diff.x, diff.y, diff.z);
         if(vSumAbs(diff) == 1.f)
         {
+            glUniform1f(texoffset_id, 0.f);
             mIdent(&model);
             mSetPos(&model, (vec){ep.x + diff.x, ep.y + diff.y, ep.z + diff.z});
             mMul(&modelview, &model, &view);
@@ -1288,7 +1278,7 @@ int main(int argc, char** argv)
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.3f, 0.745f, 0.8863f, 0.0f);
 
-    shadeLambertT(&position_id, &projection_id, &modelview_id, &lightpos_id, &normal_id, &texcoord_id, &sampler_id, &opacity_id);
+    shadeLambertT(&position_id, &projection_id, &modelview_id, &lightpos_id, &normal_id, &texcoord_id, &texoffset_id, &sampler_id, &opacity_id);
     glUniformMatrix4fv(projection_id, 1, GL_FALSE, (float*)&projection.m[0][0]);
     glUniform3f(lightpos_id, 0.f, 0.f, 0.f);
     glUniform1f(opacity_id, 1.f);
@@ -1310,6 +1300,17 @@ int main(int argc, char** argv)
     glUniform1i(sampler_id, 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mdlVoxel.iid);
+
+    // TEST VOXELS
+    voxels[0].pos = (vec){0.f, 0.f, 0.f};
+    voxels[1].pos = (vec){1.f, 0.f, 0.f};
+    voxels[2].pos = (vec){2.f, 0.f, 0.f};
+    voxels[3].pos = (vec){3.f, 0.f, 0.f};
+    voxels[4].pos = (vec){4.f, 0.f, 0.f};
+    voxels[5].pos = (vec){5.f, 0.f, 0.f};
+    voxels[6].pos = (vec){6.f, 0.f, 0.f};
+    num_voxels = 7;
+    for(int i = 0; i < num_voxels; i++){voxels[i].id = rand()%8;}
 
 //*************************************
 // execute update / render loop
