@@ -80,7 +80,7 @@ void shadeLambert3(GLint* position, GLint* projection, GLint* modelview, GLint* 
 
 // textured
 void shadeFullbrightT(GLint* position, GLint* projection, GLint* modelview, GLint* texcoord, GLint* sampler);
-void shadeLambertT(GLint* position, GLint* projection, GLint* modelview, GLint* lightpos, GLint* normal, GLint* texcoord, GLint* sampler, GLint* opacity);
+void shadeLambertT(GLint* position, GLint* projection, GLint* modelview, GLint* lightpos, GLint* normal, GLint* texcoord, GLint* texoffset, GLint* sampler, GLint* opacity);
 
 //*************************************
 // UTILITY CODE
@@ -585,6 +585,7 @@ const GLchar* v14 =
     "uniform mat4 projection;\n"
     "uniform float opacity;\n"
     "uniform vec3 lightpos;\n"
+    "uniform float texoffset;\n"
     "attribute vec4 position;\n"
     "attribute vec3 normal;\n"
     "attribute vec2 texcoord;\n"
@@ -593,6 +594,7 @@ const GLchar* v14 =
     "varying float vertOpa;\n"
     "varying vec3 vlightPos;\n"
     "varying vec2 vtc;\n"
+    "varying float vto;\n"
     "void main()\n"
     "{\n"
         "vtc = texcoord;\n"
@@ -601,6 +603,7 @@ const GLchar* v14 =
         "vertNorm = vec3(modelview * vec4(normal, 0.0));\n"
         "vertOpa = opacity;\n"
         "vlightPos = lightpos;\n"
+        "vto = texoffset;\n"
         "gl_Position = projection * vertPos4;\n"
     "}\n";
 
@@ -612,10 +615,11 @@ const GLchar* f14 =
     "varying float vertOpa;\n"
     "varying vec3 vlightPos;\n"
     "varying vec2 vtc;\n"
+    "varying float vto;\n"
     "uniform sampler2D tex;\n"
     "void main()\n"
     "{\n"
-        "vec4 tcol = texture2D(tex, vtc);\n"
+        "vec4 tcol = texture2D(tex, vec2(vtc.x+(0.032258065*vto), vtc.y));\n"
         "vec3 ambientColor = tcol.xyz * 0.148;\n"
         "vec3 lightDir = normalize(vlightPos - vertPos);\n"
         "float lambertian = max(dot(lightDir, normalize(vertNorm)), 0.0);\n"
@@ -683,6 +687,7 @@ GLint  shdLambertT_projection;
 GLint  shdLambertT_modelview;
 GLint  shdLambertT_lightpos;
 GLint  shdLambertT_texcoord;
+GLint  shdLambertT_texoffset;
 GLint  shdLambertT_sampler;
 GLint  shdLambertT_normal;
 GLint  shdLambertT_opacity;
@@ -892,7 +897,8 @@ void makeLambertT()
     shdLambertT_position   = glGetAttribLocation(shdLambertT,  "position");
     shdLambertT_normal     = glGetAttribLocation(shdLambertT,  "normal");
     shdLambertT_texcoord   = glGetAttribLocation(shdLambertT,  "texcoord");
-    
+
+    shdLambertT_texoffset  = glGetUniformLocation(shdLambertT,  "texoffset");
     shdLambertT_projection = glGetUniformLocation(shdLambertT, "projection");
     shdLambertT_modelview  = glGetUniformLocation(shdLambertT, "modelview");
     shdLambertT_lightpos   = glGetUniformLocation(shdLambertT, "lightpos");
@@ -988,13 +994,14 @@ void shadeLambert3(GLint* position, GLint* projection, GLint* modelview, GLint* 
     glUseProgram(shdLambert3);
 }
 
-void shadeLambertT(GLint* position, GLint* projection, GLint* modelview, GLint* lightpos, GLint* normal, GLint* texcoord, GLint* sampler, GLint* opacity)
+void shadeLambertT(GLint* position, GLint* projection, GLint* modelview, GLint* lightpos, GLint* normal, GLint* texcoord, GLint* texoffset, GLint* sampler, GLint* opacity)
 {
     *position = shdLambertT_position;
     *projection = shdLambertT_projection;
     *modelview = shdLambertT_modelview;
     *lightpos = shdLambertT_lightpos;
     *texcoord = shdLambertT_texcoord;
+    *texoffset = shdLambertT_texoffset;
     *sampler = shdLambertT_sampler;
     *normal = shdLambertT_normal;
     *opacity = shdLambertT_opacity;
