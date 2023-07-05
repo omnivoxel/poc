@@ -1071,9 +1071,60 @@ void main_loop()
                 {
                     vec ipp = pp;
                     vInv(&ipp);
-                    vec pb;
                     const int b = ray(&pb, 100, 1.f, ipp);
-                    if(b > 0){voxels[b].id = -1.f;} // no deleting the core block
+                    if(b > 0){voxels[b].id = -1.f;}
+                    // vec rp = pb;
+                    // if(b > 0)
+                    // {
+                    //     vec diff;
+                    //     vSub(&diff, ipp, rp);
+                    //     vNorm(&diff);
+
+                    //     vec fd = diff;
+                    //     fd.x = fabs(diff.x);
+                    //     fd.y = fabs(diff.y);
+                    //     fd.z = fabs(diff.z);
+                    //     if(fd.x > fd.y && fd.x > fd.z)
+                    //     {
+                    //         diff.y = 0.f;
+                    //         diff.z = 0.f;
+                    //     }
+                    //     else if(fd.y > fd.x && fd.y > fd.z)
+                    //     {
+                    //         diff.x = 0.f;
+                    //         diff.z = 0.f;
+                    //     }
+                    //     else if(fd.z > fd.x && fd.z > fd.y)
+                    //     {
+                    //         diff.x = 0.f;
+                    //         diff.y = 0.f;
+                    //     }
+
+                    //     diff.x = roundf(diff.x);
+                    //     diff.y = roundf(diff.y);
+                    //     diff.z = roundf(diff.z);
+
+                    //     rp.x += diff.x;
+                    //     rp.y += diff.y;
+                    //     rp.z += diff.z;
+
+                    //     if(vSumAbs(diff) == 1.f)
+                    //     {
+                    //         uint rpif = 1;
+                    //         for(int i = 0; i < num_voxels; i++)
+                    //         {
+                    //             if(voxels[i].id < 0.f){continue;}
+
+                    //             if(rp.x == voxels[i].pos.x && rp.y == voxels[i].pos.y && rp.z == voxels[i].pos.z)
+                    //             {
+                    //                 voxels[i].id = -1.f;
+                    //                 rpif = 0;
+                    //                 break;
+                    //             }
+                    //         }
+                    //         if(rpif == 1){voxels[b].id = -1.f;}
+                    //     }
+                    // }
                 }
                 else if(event.button.button == SDL_BUTTON_MIDDLE)
                 {
@@ -1337,6 +1388,7 @@ int main(int argc, char** argv)
     wnd = SDL_CreateWindow(appTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, winw, winh, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     SDL_GL_SetSwapInterval(0);
     glc = SDL_GL_CreateContext(wnd);
+    SDL_ShowCursor(0);
     //SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
     //glDisableVertexAttribArray(1); // seems to be a bug in emscripten?
 
