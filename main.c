@@ -890,7 +890,7 @@ uint is_zeroish(const float x, const float y)
 {
     return (x > -1.f && x < 1.f && y > -1.f && y < 1.f);
 }
-uint insideFrustum(const float x, const float y, const float z)
+forceinline uint insideFrustum(const float x, const float y, const float z)
 {
     const float xm = x+pp.x, ym = y+pp.y, zm = z+pp.z;
     return (xm*look_dir.x) + (ym*look_dir.y) + (zm*look_dir.z) > 0.f; // check the angle
