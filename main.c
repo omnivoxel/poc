@@ -853,6 +853,7 @@ typedef struct
 uint num_voxels = 0;
 voxel voxels[max_voxels] = {0};
 
+// shoot ray through voxels
 int ray(vec* ep, const uint depth, const float stepsize, const vec start_pos)
 {
     vec inc;
@@ -886,10 +887,6 @@ int ray(vec* ep, const uint depth, const float stepsize, const vec start_pos)
 //*************************************
 void timestamp(char* ts){const time_t tt = time(0);strftime(ts, 16, "%H:%M:%S", localtime(&tt));}
 forceinline float fTime(){return ((float)SDL_GetTicks())*0.001f;}
-uint is_zeroish(const float x, const float y)
-{
-    return (x > -1.f && x < 1.f && y > -1.f && y < 1.f);
-}
 forceinline uint insideFrustum(const float x, const float y, const float z)
 {
     const float xm = x+pp.x, ym = y+pp.y, zm = z+pp.z;
