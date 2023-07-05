@@ -1220,12 +1220,15 @@ void main_loop()
 
         //printf("%f - %f %f %f\n", vSumAbs(diff), diff.x, diff.y, diff.z);
 
-        glUniform1f(texoffset_id, 0.f);
-        mIdent(&model);
-        mSetPos(&model, (vec){ep.x + diff.x, ep.y + diff.y, ep.z + diff.z});
-        mMul(&modelview, &model, &view);
-        glUniformMatrix4fv(modelview_id, 1, GL_FALSE, (float*)&modelview.m[0][0]);
-        glDrawElements(GL_TRIANGLES, voxel_numind, GL_UNSIGNED_BYTE, 0);
+        if(vSumAbs(diff) == 1.f)
+        {
+            glUniform1f(texoffset_id, 0.f);
+            mIdent(&model);
+            mSetPos(&model, (vec){ep.x + diff.x, ep.y + diff.y, ep.z + diff.z});
+            mMul(&modelview, &model, &view);
+            glUniformMatrix4fv(modelview_id, 1, GL_FALSE, (float*)&modelview.m[0][0]);
+            glDrawElements(GL_TRIANGLES, voxel_numind, GL_UNSIGNED_BYTE, 0);
+        }
     }
 
 //*************************************
