@@ -892,10 +892,6 @@ forceinline uint insideFrustum(const float x, const float y, const float z)
     const float xm = x+pp.x, ym = y+pp.y, zm = z+pp.z;
     return (xm*look_dir.x) + (ym*look_dir.y) + (zm*look_dir.z) > 0.f; // check the angle
 }
-
-//*************************************
-// gl functions
-//*************************************
 void doPerspective()
 {
     glViewport(0, 0, winw, winh);
@@ -1337,11 +1333,8 @@ int main(int argc, char** argv)
 //*************************************
 // configure render options
 //*************************************
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    //glBlendEquation(GL_FUNC_ADD);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_CULL_FACE);
     glDisable(GL_BLEND);
-    //glDisable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.f, 0.f, 0.f, 0.0f);
 
@@ -1368,7 +1361,7 @@ int main(int argc, char** argv)
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mdlVoxel.iid);
 
-    // TEST VOXELS
+    // DEFAULT VOXELS
     voxels[0].pos = (vec){0.f, 0.f, 0.f};
     voxels[0].id = 13.f;
     voxels[1].pos = (vec){1.f, 1.f, 0.f};
@@ -1379,6 +1372,7 @@ int main(int argc, char** argv)
     voxels[3].id = 13.f;
     num_voxels = 4;
     
+    // TEST VOXELS
     // voxels[0].pos = (vec){0.f, 0.f, 0.f};
     // voxels[1].pos = (vec){1.f, 0.f, 0.f};
     // voxels[2].pos = (vec){2.f, 0.f, 0.f};
