@@ -1236,6 +1236,7 @@ void main_loop()
         {
             mIdent(&model);
             mSetPos(&model, (vec){pb.x, pb.y, pb.z});
+            mScale(&model, 0.5f, 0.5f, 0.5f);
             mMul(&modelview, &model, &view);
             glUniformMatrix4fv(modelview_id, 1, GL_FALSE, (float*)&modelview.m[0][0]);
             glDrawElements(GL_TRIANGLES, voxel_numind, GL_UNSIGNED_BYTE, 0);
@@ -1336,11 +1337,11 @@ int main(int argc, char** argv)
     // TEST VOXELS
     voxels[0].pos = (vec){0.f, 0.f, 0.f};
     voxels[0].id = 13.f;
-    voxels[1].pos = (vec){0.f, -1.f, 0.f};
+    voxels[1].pos = (vec){-1.f, 1.f, 0.f};
     voxels[1].id = 13.f;
-    voxels[2].pos = (vec){1.f, -1.f, 0.f};
+    voxels[2].pos = (vec){-1.f, -1.f, 0.f};
     voxels[2].id = 13.f;
-    voxels[3].pos = (vec){-1.f, -1.f, 0.f};
+    voxels[3].pos = (vec){-1.f, 0.f, 0.f};
     voxels[3].id = 13.f;
     num_voxels = 4;
     
