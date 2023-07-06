@@ -796,12 +796,14 @@ const char appTitle[] = "OmniVoxel";
 SDL_Window* wnd;
 SDL_GLContext glc;
 Uint32 winw = 1024, winh = 768;
+Uint32 winw2 = 512, winh2 = 384;
 float ww, wh;
 float aspect, t = 0.f;
 uint ks[10] = {0}; // keystate
+uint focus_mouse = 0;
 
 // camera vars
-float sens = 0.004f;
+float sens = 0.003f;
 float xrot = 0.f;
 float yrot = 1.5f;
 float ddist = 150.f; // draw distance
@@ -918,7 +920,6 @@ void main_loop()
 //*************************************
 // input handling
 //*************************************
-    static float tsx=0, tsy=0, tdx=0, tdy=0;
     static int mx=0, my=0, lx=0, ly=0, md=0;
     SDL_Event event;
     while(SDL_PollEvent(&event))
@@ -937,6 +938,11 @@ void main_loop()
                 else if(event.key.keysym.sym == SDLK_UP){ks[7] = 1;}
                 else if(event.key.keysym.sym == SDLK_DOWN){ks[8] = 1;}
                 else if(event.key.keysym.sym == SDLK_SPACE){ks[9] = 1;}
+                else if(event.key.keysym.sym == SDLK_ESCAPE)
+                {
+                    focus_mouse = 0;
+                    SDL_ShowCursor(1);
+                }
             }
             break;
 
@@ -979,6 +985,13 @@ void main_loop()
                 mx = event.button.x;
                 my = event.button.y;
 
+                if(focus_mouse == 0)
+                {
+                    focus_mouse = 1;
+                    SDL_ShowCursor(0);
+                    break;
+                }
+
                 if(event.button.button == SDL_BUTTON_LEFT)
                 {
                     if(num_voxels < max_voxels)
@@ -1007,21 +1020,13 @@ void main_loop()
                     const int b = ray(&pb, 100, 1.f, ipp);
                     if(b > 0){voxels[b].id = -1.f;}
                 }
-                else if(event.button.button == SDL_BUTTON_MIDDLE)
-                {
-                    pb = (vec){0.f, 0.f, 0.f};
-                    md = 1;
-                }
             }
             break;
 
             case SDL_MOUSEMOTION:
             {
-                if(md > 0)
-                {
-                    mx = event.motion.x;
-                    my = event.motion.y;
-                }
+                mx = event.motion.x;
+                my = event.motion.y;
             }
             break;
 
@@ -1037,6 +1042,8 @@ void main_loop()
                 {
                     winw = event.window.data1;
                     winh = event.window.data2;
+                    winw2 = winw/2;
+                    winh2 = winh/2;
                     doPerspective();
                 }
             }
@@ -1107,26 +1114,6 @@ void main_loop()
         vAdd(&pp, pp, m);
     }
 
-    // touch move
-    if(tdx != 0.f && tdy != 0.f)
-    {
-        float ttdx = tdx * 8.f;
-        float ttdy = tdy * 6.f;
-        if(ww > wh){ttdx *= ww/wh;}
-        if(wh > ww){ttdy *= wh/ww;}
-        if(ttdx > 1.6f){ttdx = 1.6f;}
-        else if(ttdx < -1.6f){ttdx = -1.6f;}
-        if(ttdy > 1.6f){ttdy = 1.6f;}
-        else if(ttdy < -1.6f){ttdy = -1.6f;}
-        vec m;
-        vMulS(&m, look_dir, ttdy * dt);
-        vSub(&pp, pp, m);
-        vec vdc;
-        mGetViewX(&vdc, view);
-        vMulS(&m, vdc, ttdx * dt);
-        vSub(&pp, pp, m);
-    }
-
     if(ks[5] == 1) // LEFT
         xrot += 1.f*dt;
     else if(ks[6] == 1) // RIGHT
@@ -1140,15 +1127,24 @@ void main_loop()
 //*************************************
 // camera/mouse control
 //*************************************
-    xrot += (lx-mx)*sens;
-    yrot += (ly-my)*sens;
-
-    if(yrot > 3.f)
-        yrot = 3.f;
-    if(yrot < 0.f)
-        yrot = 0.f;
-
-    lx = mx, ly = my;
+    if(focus_mouse == 1)
+    {
+        const int xd = lx-mx;
+        const int yd = ly-my;
+        if(xd != 0 || yd != 0)
+        {
+            xrot += xd*sens;
+            yrot += yd*sens;
+        
+            if(yrot > 3.f)
+                yrot = 3.f;
+            if(yrot < 0.f)
+                yrot = 0.f;
+            
+            lx = winw2, ly = winh2;
+            SDL_WarpMouseInWindow(wnd, lx, ly);
+        }
+    }
 
     mIdent(&view);
     mRotate(&view, yrot, 1.f, 0.f, 0.f);
@@ -1198,9 +1194,9 @@ void main_loop()
         vNorm(&diff);
 
         vec fd = diff;
-        fd.x = fabs(diff.x);
-        fd.y = fabs(diff.y);
-        fd.z = fabs(diff.z);
+        fd.x = fabsf(diff.x);
+        fd.y = fabsf(diff.y);
+        fd.z = fabsf(diff.z);
         if(fd.x > fd.y && fd.x > fd.z)
         {
             diff.y = 0.f;
@@ -1302,7 +1298,8 @@ int main(int argc, char** argv)
         printf("ERROR: SDL_GL_CreateContext(): %s\n", SDL_GetError());
         return 1;
     }
-    //SDL_ShowCursor(0);
+    //SDL_SetRelativeMouseMode(SDL_TRUE);
+    SDL_ShowCursor(0);
     //SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
 
     // seed random
