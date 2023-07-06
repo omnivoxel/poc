@@ -806,15 +806,15 @@ uint focus_mouse = 0;
 float sens = 0.003f;
 float xrot = 0.f;
 float yrot = 1.5f;
-float ddist = 160.f; // draw distance
+float ddist = 160.f;        // draw distance
 float ddist2 = 160.f*160.f; // draw distance squared
-vec look_dir; // camera look direction
+vec look_dir;               // camera look direction
 
 // player vars
-vec pp = (vec){0.f, 4.f, 0.f}; // player position
-float move_speed = 9.3f;
-vec pb; // place block pos
-float sb = 13.f; // selected block
+vec pp = (vec){0.f, 4.f, 0.f};  // player position
+float move_speed = 9.3f;        // player move speed
+vec pb;                         // place block pos
+float sb = 13.f;                // selected block
 
 // render state id's
 GLint projection_id;
@@ -845,14 +845,16 @@ const GLubyte voxel_indices[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,0,1
 const GLsizeiptr voxel_numind = 36;
 const GLsizeiptr voxel_numvert = 24;
 ESModel mdlVoxel;
-typedef struct
-{
-    float id; //unsigned char id;
-    vec pos;
-} voxel;
-#define max_voxels 131072
+#define max_voxels 4194304 // 4.2 million
 uint num_voxels = 0;
-voxel voxels[max_voxels] = {0};
+vec voxels[max_voxels] = {0};
+
+// ? or a second mirror array of relative positions
+// typedef struct
+// {
+//     vec pos;  // w is node texture id, xyz=id/pos
+//     vec rpos; // it's relative position in game
+// } voxel;
 
 // shoot ray through voxels
 int ray(vec* ep, const uint depth, const float stepsize, const vec start_pos)
@@ -870,10 +872,10 @@ int ray(vec* ep, const uint depth, const float stepsize, const vec start_pos)
         rb.z = roundf(rp.z);
         for(int j = 0; j < num_voxels; j++)
         {
-            if(voxels[j].id < 0.f){continue;}
-            if(rb.x == voxels[j].pos.x && rb.y == voxels[j].pos.y && rb.z == voxels[j].pos.z)
+            if(voxels[j].w < 0.f){continue;}
+            if(rb.x == voxels[j].x && rb.y == voxels[j].y && rb.z == voxels[j].z)
             {
-                *ep = voxels[j].pos;
+                *ep = voxels[j];
                 hit = j;
                 break;
             }
@@ -959,24 +961,24 @@ void main_loop()
                     vec ipp = pp;
                     vInv(&ipp);
                     const int b = ray(&pb, 100, 0.25f, ipp);
-                    if(b > 0){voxels[b].id = -1.f;}
+                    if(b > 0){voxels[b].w = -1.f;}
                 }
                 else if(event.key.keysym.sym == SDLK_e) // place a voxel
                 {
                     if(num_voxels < max_voxels)
                     {
-                        voxels[num_voxels].id = sb;
-                        voxels[num_voxels].pos = pb;
+                        voxels[num_voxels].w = sb;
+                        voxels[num_voxels] = pb;
                         num_voxels++;
                     }
                     else
                     {
                         for(uint i = 0; i < max_voxels; i++)
                         {
-                            if(voxels[i].id < 0.f)
+                            if(voxels[i].w < 0.f)
                             {
-                                voxels[i].id = sb;
-                                voxels[i].pos = pb;
+                                voxels[i].w = sb;
+                                voxels[i] = pb;
                                 break;
                             }
                         }
@@ -1042,18 +1044,18 @@ void main_loop()
                 {
                     if(num_voxels < max_voxels)
                     {
-                        voxels[num_voxels].id = sb;
-                        voxels[num_voxels].pos = pb;
+                        voxels[num_voxels].w = sb;
+                        voxels[num_voxels] = pb;
                         num_voxels++;
                     }
                     else
                     {
                         for(uint i = 0; i < max_voxels; i++)
                         {
-                            if(voxels[i].id < 0.f)
+                            if(voxels[i].w < 0.f)
                             {
-                                voxels[i].id = sb;
-                                voxels[i].pos = pb;
+                                voxels[i].w = sb;
+                                voxels[i] = pb;
                                 break;
                             }
                         }
@@ -1065,7 +1067,7 @@ void main_loop()
                     vec ipp = pp;
                     vInv(&ipp);
                     const int b = ray(&pb, 100, 0.25f, ipp);
-                    if(b > 0){voxels[b].id = -1.f;}
+                    if(b > 0){voxels[b].w = -1.f;}
                 }
                 else if(event.button.button == SDL_BUTTON_X1) // change movement speeds
                 {
@@ -1224,13 +1226,13 @@ void main_loop()
     vInv(&ipp);   // <--
     for(int j = 1; j < num_voxels; j++)
     {
-        if(voxels[j].id < 0.f || 
-            vDistSq(ipp, voxels[j].pos) >= ddist2 ||
-            insideFrustum(voxels[j].pos.x, voxels[j].pos.y, voxels[j].pos.z) == 0){continue;}
+        if(voxels[j].w < 0.f || 
+            vDistSq(ipp, voxels[j]) >= ddist2 ||
+            insideFrustum(voxels[j].x, voxels[j].y, voxels[j].z) == 0){continue;}
 
-        glUniform1f(texoffset_id, voxels[j].id);
+        glUniform1f(texoffset_id, voxels[j].w);
         mIdent(&model);
-        mSetPos(&model, voxels[j].pos);
+        mSetPos(&model, voxels[j]);
         mMul(&modelview, &model, &view);
         glUniformMatrix4fv(modelview_id, 1, GL_FALSE, (float*)&modelview.m[0][0]);
         glDrawElements(GL_TRIANGLES, voxel_numind, GL_UNSIGNED_BYTE, 0);
@@ -1281,9 +1283,9 @@ void main_loop()
             uint rpif = 1;
             for(int i = 0; i < num_voxels; i++)
             {
-                if(voxels[i].id < 0.f){continue;}
+                if(voxels[i].w < 0.f){continue;}
 
-                if(rp.x == voxels[i].pos.x && rp.y == voxels[i].pos.y && rp.z == voxels[i].pos.z)
+                if(rp.x == voxels[i].x && rp.y == voxels[i].y && rp.z == voxels[i].z)
                 {
                     rpif = 0;
                     break;
@@ -1329,8 +1331,6 @@ int main(int argc, char** argv)
 //*************************************
 // setup render context / window
 //*************************************
-
-    // help
     printf(">-- OmniVoxel\n\n");
     printf("Mouse locks when you click on the game window, press ESCAPE to unlock the mouse.\n\n");
     printf("W,A,S,D = Move around based on relative orientation to X and Y.\n");
@@ -1342,8 +1342,7 @@ int main(int argc, char** argv)
     printf("Arrow Keys can be used to move view around.\n");
     printf("\n");
 
-    
-    // setup
+    // setup window
     if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_EVENTS) < 0) //SDL_INIT_AUDIO
     {
         printf("ERROR: SDL_Init(): %s\n", SDL_GetError());
@@ -1376,7 +1375,6 @@ int main(int argc, char** argv)
 //*************************************
 // bind vertex and index buffers
 //*************************************
-
     esBind(GL_ARRAY_BUFFER, &mdlVoxel.tid, voxel_uvmap, sizeof(voxel_uvmap), GL_STATIC_DRAW);
     esBind(GL_ARRAY_BUFFER, &mdlVoxel.vid, voxel_vertices, sizeof(voxel_vertices), GL_STATIC_DRAW);
     esBind(GL_ARRAY_BUFFER, &mdlVoxel.nid, voxel_normals, sizeof(voxel_normals), GL_STATIC_DRAW);
@@ -1391,7 +1389,6 @@ int main(int argc, char** argv)
 //*************************************
 // compile & link shader program
 //*************************************
-
     makeLambertT(); // textured lambertian
 
 //*************************************
@@ -1426,31 +1423,30 @@ int main(int argc, char** argv)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mdlVoxel.iid);
 
     // DEFAULT VOXELS
-    voxels[0].pos = (vec){0.f, 0.f, 0.f};
-    voxels[0].id = 13.f;
-    voxels[1].pos = (vec){1.f, 1.f, 0.f};
-    voxels[1].id = 13.f;
-    voxels[2].pos = (vec){1.f, -1.f, 0.f};
-    voxels[2].id = 13.f;
-    voxels[3].pos = (vec){1.f, 0.f, 0.f};
-    voxels[3].id = 13.f;
+    voxels[0] = (vec){0.f, 0.f, 0.f};
+    voxels[0].w = 13.f;
+    voxels[1] = (vec){1.f, 1.f, 0.f};
+    voxels[1].w = 13.f;
+    voxels[2] = (vec){1.f, -1.f, 0.f};
+    voxels[2].w = 13.f;
+    voxels[3] = (vec){1.f, 0.f, 0.f};
+    voxels[3].w = 13.f;
     num_voxels = 4;
     
     // TEST VOXELS
-    // voxels[0].pos = (vec){0.f, 0.f, 0.f};
-    // voxels[1].pos = (vec){1.f, 0.f, 0.f};
-    // voxels[2].pos = (vec){2.f, 0.f, 0.f};
-    // voxels[3].pos = (vec){3.f, 0.f, 0.f};
-    // voxels[4].pos = (vec){4.f, 0.f, 0.f};
-    // voxels[5].pos = (vec){5.f, 0.f, 0.f};
-    // voxels[6].pos = (vec){6.f, 0.f, 0.f};
+    // voxels[0] = (vec){0.f, 0.f, 0.f};
+    // voxels[1] = (vec){1.f, 0.f, 0.f};
+    // voxels[2] = (vec){2.f, 0.f, 0.f};
+    // voxels[3] = (vec){3.f, 0.f, 0.f};
+    // voxels[4] = (vec){4.f, 0.f, 0.f};
+    // voxels[5] = (vec){5.f, 0.f, 0.f};
+    // voxels[6] = (vec){6.f, 0.f, 0.f};
     // num_voxels = 7;
-    // for(int i = 0; i < num_voxels; i++){voxels[i].id = rand()%8;}
+    // for(int i = 0; i < num_voxels; i++){voxels[i].w = rand()%8;}
 
 //*************************************
 // execute update / render loop
 //*************************************
-
 #ifdef VERBOSE
     t = fTime();
     uint fps = 0;
