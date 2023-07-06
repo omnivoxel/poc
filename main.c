@@ -806,8 +806,8 @@ uint focus_mouse = 0;
 float sens = 0.003f;
 float xrot = 0.f;
 float yrot = 1.5f;
-float ddist = 150.f; // draw distance
-float ddist2 = 22500.f; // draw distance squared
+float ddist = 160.f; // draw distance
+float ddist2 = 160.f*160.f; // draw distance squared
 vec look_dir; // camera look direction
 
 // player vars
@@ -900,7 +900,7 @@ void doPerspective()
     ww = (float)winw;
     wh = (float)winh;
     mIdent(&projection);
-    mPerspective(&projection, 60.0f, ww / wh, 0.01f, 150.f);
+    mPerspective(&projection, 60.0f, ww / wh, 0.01f, ddist);
     glUniformMatrix4fv(projection_id, 1, GL_FALSE, (float*)&projection.m[0][0]);
 }
 
