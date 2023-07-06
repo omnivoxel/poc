@@ -1120,7 +1120,6 @@ void main_loop()
 // keystates
 //*************************************
 
-    const vec lp = pp;
     mGetViewZ(&look_dir, view);
 
     if(ks[0] == 1) // W
@@ -1364,8 +1363,8 @@ int main(int argc, char** argv)
         printf("ERROR: SDL_GL_CreateContext(): %s\n", SDL_GetError());
         return 1;
     }
-    //SDL_SetRelativeMouseMode(SDL_TRUE);
     SDL_ShowCursor(0);
+    //SDL_SetRelativeMouseMode(SDL_TRUE);
     //SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
 
     // seed random
