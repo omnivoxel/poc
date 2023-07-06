@@ -983,6 +983,13 @@ void main_loop()
                         }
                     }
                 }
+                else if(event.key.keysym.sym == SDLK_f)
+                {
+                    if(move_speed == 9.3f)
+                        move_speed = 18.6f;
+                    else
+                        move_speed = 9.3f;
+                }
             }
             break;
 
@@ -1060,6 +1067,13 @@ void main_loop()
                     vInv(&ipp);
                     const int b = ray(&pb, 100, 0.25f, ipp);
                     if(b > 0){voxels[b].id = -1.f;}
+                }
+                else if(event.button.button == SDL_BUTTON_X1)
+                {
+                    if(move_speed == 9.3f)
+                        move_speed = 18.6f;
+                    else
+                        move_speed = 9.3f;
                 }
             }
             break;
@@ -1207,10 +1221,12 @@ void main_loop()
     glDrawElements(GL_TRIANGLES, voxel_numind, GL_UNSIGNED_BYTE, 0);
 
     // render voxels
+    vec ipp = pp; // inverse player position
+    vInv(&ipp);   // <--
     for(int j = 1; j < num_voxels; j++)
     {
         if(voxels[j].id < 0.f || 
-            vDistSq(pp, voxels[j].pos) >= ddist2 ||
+            vDistSq(ipp, voxels[j].pos) >= ddist2 ||
             insideFrustum(voxels[j].pos.x, voxels[j].pos.y, voxels[j].pos.z) == 0){continue;}
 
         glUniform1f(texoffset_id, voxels[j].id);
@@ -1225,8 +1241,6 @@ void main_loop()
     glUniform1f(texoffset_id, sb);
 
     // targeting voxel
-    vec ipp = pp;
-    vInv(&ipp);
     vec rp = pb;
     if(ray(&rp, 100, 0.25f, ipp) > -1)
     {
@@ -1428,6 +1442,25 @@ int main(int argc, char** argv)
 // execute update / render loop
 //*************************************
 
-    while(1){main_loop();}
+#ifdef VERBOSE
+    t = fTime();
+    uint fps = 0;
+    float ft = t+3.f;
+#endif
+    while(1)
+    {
+#ifdef VERBOSE
+        if(t > ft)
+        {
+            printf("%u fps\n", fps/3);
+            fps = 0;
+            ft = t+3.f;
+        }
+#endif
+        main_loop();
+#ifdef VERBOSE
+        fps++;
+#endif
+    }
     return 0;
 }
