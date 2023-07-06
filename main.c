@@ -847,7 +847,7 @@ const GLsizeiptr voxel_numvert = 24;
 ESModel mdlVoxel;
 #define max_voxels 4194304 // 4.2 million
 uint num_voxels = 0;
-vec voxels[max_voxels] = {0};
+vec voxels[max_voxels] = {0}; // x,y,z,w (w = texture_id)
 
 // ? or a second mirror array of relative positions
 // typedef struct
