@@ -813,7 +813,7 @@ vec look_dir; // camera look direction
 // player vars
 vec pp = (vec){0.f, 4.f, 0.f}; // player position
 float cx=0.f,cy=0.f; // grid cell location
-float move_speed = 6.3f;
+float move_speed = 9.3f;
 vec pb; // place block pos
 float sb = 13.f; // selected block
 
@@ -851,7 +851,7 @@ typedef struct
     float id; //unsigned char id;
     vec pos;
 } voxel;
-#define max_voxels 2048
+#define max_voxels 131072
 uint num_voxels = 0;
 voxel voxels[max_voxels] = {0};
 
@@ -1279,10 +1279,10 @@ void main_loop()
             if(rpif == 1){pb = rp;}
         }
     }
-    // else
-    // {
-    //     pb = (vec){0.f, 0.f, 0.f};
-    // }
+    else
+    {
+        pb = (vec){0.f, 0.f, 0.f};
+    }
 
     if(vSumAbs(pb) > 0.f)
     {
