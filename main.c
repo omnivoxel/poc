@@ -943,6 +943,34 @@ void main_loop()
                     focus_mouse = 0;
                     SDL_ShowCursor(1);
                 }
+                else if(event.key.keysym.sym == SDLK_q)
+                {
+                    vec ipp = pp;
+                    vInv(&ipp);
+                    const int b = ray(&pb, 100, 0.25f, ipp);
+                    if(b > 0){voxels[b].id = -1.f;}
+                }
+                else if(event.key.keysym.sym == SDLK_e)
+                {
+                    if(num_voxels < max_voxels)
+                    {
+                        voxels[num_voxels].id = sb;
+                        voxels[num_voxels].pos = pb;
+                        num_voxels++;
+                    }
+                    else
+                    {
+                        for(uint i = 0; i < max_voxels; i++)
+                        {
+                            if(voxels[i].id < 0.f)
+                            {
+                                voxels[i].id = sb;
+                                voxels[i].pos = pb;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
             break;
 
@@ -1017,7 +1045,7 @@ void main_loop()
                 {
                     vec ipp = pp;
                     vInv(&ipp);
-                    const int b = ray(&pb, 100, 1.f, ipp);
+                    const int b = ray(&pb, 100, 0.25f, ipp);
                     if(b > 0){voxels[b].id = -1.f;}
                 }
             }
@@ -1187,7 +1215,7 @@ void main_loop()
     vec ipp = pp;
     vInv(&ipp);
     vec rp = pb;
-    if(ray(&rp, 100, 1.f, ipp) > -1)
+    if(ray(&rp, 100, 0.25f, ipp) > -1)
     {
         vec diff;
         vSub(&diff, ipp, rp);
