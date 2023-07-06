@@ -1301,7 +1301,6 @@ void main_loop()
     glUniform1f(texoffset_id, 20.f);
     glUniformMatrix4fv(modelview_id, 1, GL_FALSE, (float*)&model.m[0][0]);
     glDrawElements(GL_TRIANGLES, voxel_numind, GL_UNSIGNED_BYTE, 0);
-    glEnable(GL_DEPTH_TEST);
 
 //*************************************
 // swap buffers / display render
