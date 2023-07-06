@@ -806,8 +806,8 @@ uint focus_mouse = 0;
 float sens = 0.003f;
 float xrot = 0.f;
 float yrot = 1.5f;
-float ddist = 160.f;        // draw distance
-float ddist2 = 160.f*160.f; // draw distance squared
+float ddist = 460.f;        // draw distance
+float ddist2 = 460.f*460.f; // draw distance squared
 vec look_dir;               // camera look direction
 
 // player vars
@@ -938,7 +938,7 @@ void main_loop()
                 else if(event.key.keysym.sym == SDLK_RIGHT){ks[6] = 1;}
                 else if(event.key.keysym.sym == SDLK_UP){ks[7] = 1;}
                 else if(event.key.keysym.sym == SDLK_DOWN){ks[8] = 1;}
-                else if(event.key.keysym.sym == SDLK_SPACE){ks[9] = 1;} // move up Z
+                else if(event.key.keysym.sym == SDLK_SPACE || event.key.keysym.sym == SDLK_LCTRL){ks[9] = 1;} // move up Z
                 else if(event.key.keysym.sym == SDLK_ESCAPE) // unlock mouse focus
                 {
                     focus_mouse = 0;
@@ -1005,7 +1005,7 @@ void main_loop()
                 else if(event.key.keysym.sym == SDLK_RIGHT){ks[6] = 0;}
                 else if(event.key.keysym.sym == SDLK_UP){ks[7] = 0;}
                 else if(event.key.keysym.sym == SDLK_DOWN){ks[8] = 0;}
-                else if(event.key.keysym.sym == SDLK_SPACE){ks[9] = 0;}
+                else if(event.key.keysym.sym == SDLK_SPACE || event.key.keysym.sym == SDLK_LCTRL){ks[9] = 0;}
             }
             break;
 
