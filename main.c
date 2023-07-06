@@ -931,37 +931,37 @@ void main_loop()
                 else if(event.key.keysym.sym == SDLK_a){ks[1] = 1;}
                 else if(event.key.keysym.sym == SDLK_s){ks[2] = 1;}
                 else if(event.key.keysym.sym == SDLK_d){ks[3] = 1;}
-                else if(event.key.keysym.sym == SDLK_LSHIFT){ks[4] = 1;}
+                else if(event.key.keysym.sym == SDLK_LSHIFT){ks[4] = 1;} // move down Z
                 else if(event.key.keysym.sym == SDLK_LEFT){ks[5] = 1;}
                 else if(event.key.keysym.sym == SDLK_RIGHT){ks[6] = 1;}
                 else if(event.key.keysym.sym == SDLK_UP){ks[7] = 1;}
                 else if(event.key.keysym.sym == SDLK_DOWN){ks[8] = 1;}
-                else if(event.key.keysym.sym == SDLK_SPACE){ks[9] = 1;}
-                else if(event.key.keysym.sym == SDLK_ESCAPE)
+                else if(event.key.keysym.sym == SDLK_SPACE){ks[9] = 1;} // move up Z
+                else if(event.key.keysym.sym == SDLK_ESCAPE) // unlock mouse focus
                 {
                     focus_mouse = 0;
                     SDL_ShowCursor(1);
                 }
-                else if(event.key.keysym.sym == SDLK_2)
+                else if(event.key.keysym.sym == SDLK_2) // - change selected node
                 {
                     sb -= 1.f;
                     if(sb == 10.f){sb--;}
                     if(sb < 0.f){sb = 30.f;}
                 }
-                else if(event.key.keysym.sym == SDLK_3)
+                else if(event.key.keysym.sym == SDLK_3) // + change selected node
                 {
                     sb += 1.f;
                     if(sb == 10.f){sb++;}
                     if(sb > 30.f){sb = 0.f;}
                 }
-                else if(event.key.keysym.sym == SDLK_q)
+                else if(event.key.keysym.sym == SDLK_q) // remove pointed voxel
                 {
                     vec ipp = pp;
                     vInv(&ipp);
                     const int b = ray(&pb, 100, 0.25f, ipp);
                     if(b > 0){voxels[b].id = -1.f;}
                 }
-                else if(event.key.keysym.sym == SDLK_e)
+                else if(event.key.keysym.sym == SDLK_e) // place a voxel
                 {
                     if(num_voxels < max_voxels)
                     {
@@ -982,7 +982,7 @@ void main_loop()
                         }
                     }
                 }
-                else if(event.key.keysym.sym == SDLK_f)
+                else if(event.key.keysym.sym == SDLK_f) // change movement speeds
                 {
                     if(move_speed == 9.3f)
                         move_speed = 18.6f;
@@ -1007,7 +1007,7 @@ void main_loop()
             }
             break;
 
-            case SDL_MOUSEWHEEL:
+            case SDL_MOUSEWHEEL: // change selected node
             {
                 if(event.wheel.y > 0)
                 {
@@ -1031,14 +1031,14 @@ void main_loop()
                 mx = event.button.x;
                 my = event.button.y;
 
-                if(focus_mouse == 0)
+                if(focus_mouse == 0) // lock mouse focus on every mouse input to the window
                 {
                     focus_mouse = 1;
                     SDL_ShowCursor(0);
                     break;
                 }
 
-                if(event.button.button == SDL_BUTTON_LEFT)
+                if(event.button.button == SDL_BUTTON_LEFT) // place a voxel
                 {
                     if(num_voxels < max_voxels)
                     {
@@ -1059,7 +1059,7 @@ void main_loop()
                         }
                     }
                 }
-                else if(event.button.button == SDL_BUTTON_RIGHT)
+                else if(event.button.button == SDL_BUTTON_RIGHT) // remove pointed voxel
                 {
                     pb = (vec){0.f, 0.f, 0.f};
                     vec ipp = pp;
@@ -1067,7 +1067,7 @@ void main_loop()
                     const int b = ray(&pb, 100, 0.25f, ipp);
                     if(b > 0){voxels[b].id = -1.f;}
                 }
-                else if(event.button.button == SDL_BUTTON_X1)
+                else if(event.button.button == SDL_BUTTON_X1) // change movement speeds
                 {
                     if(move_speed == 9.3f)
                         move_speed = 18.6f;
@@ -1331,7 +1331,17 @@ int main(int argc, char** argv)
 //*************************************
 
     // help
-    printf("OmniVoxel\n\n");
+    printf(">-- OmniVoxel\n\n");
+    printf("Mouse locks when you click on the game window, press ESCAPE to unlock the mouse.\n\n");
+    printf("W,A,S,D = Move around based on relative orientation to X and Y.\n");
+    printf("L-SHIFT + SPACE = Move up and down relative Z.\n");
+    printf("2-3 / Mouse Scroll Wheel = Change selected node.\n");
+    printf("E / Left Click = Place node.\n");
+    printf("Q / Right Click = Delete pointed node.\n");
+    printf("F / Mouse4 Click = Toggle player fast speed on and off.\n");
+    printf("Arrow Keys can be used to move view around.\n");
+    printf("\n");
+
     
     // setup
     if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_EVENTS) < 0) //SDL_INIT_AUDIO
