@@ -624,7 +624,7 @@ const GLchar* f14 =
         "vec3 lightDir = normalize(vlightPos - vertPos);\n"
         "float lambertian = max(dot(lightDir, normalize(vertNorm)), 0.0);\n"
         //"gl_FragColor = vec4(ambientColor + lambertian*tcol.xyz, vertOpa);\n"
-        "gl_FragColor = vec4((ambientColor + lambertian*tcol.xyz) * clamp(1.0 - (length(vertPos)*0.006), 0.0, 1.0), vertOpa);\n"
+        "gl_FragColor = vec4((ambientColor + lambertian*tcol.xyz) * clamp(1.0 - (length(vertPos)*0.002), 0.0, 1.0), vertOpa);\n"
         //"float amt = clamp(1.0 - (length(vertPos)*0.02), 0.0, 1.0);\n"
         //"gl_FragColor = vec4( ((ambientColor + lambertian*tcol.xyz) * amt) + (vec3(0.3, 0.745, 0.8863) * (1.0-amt)) , vertOpa);\n"
     "}\n";
