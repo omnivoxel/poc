@@ -943,6 +943,18 @@ void main_loop()
                     focus_mouse = 0;
                     SDL_ShowCursor(1);
                 }
+                else if(event.key.keysym.sym == SDLK_2)
+                {
+                    sb -= 1.f;
+                    if(sb == 10.f){sb--;}
+                    if(sb < 0.f){sb = 30.f;}
+                }
+                else if(event.key.keysym.sym == SDLK_3)
+                {
+                    sb += 1.f;
+                    if(sb == 10.f){sb++;}
+                    if(sb > 30.f){sb = 0.f;}
+                }
                 else if(event.key.keysym.sym == SDLK_q)
                 {
                     vec ipp = pp;
