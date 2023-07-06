@@ -967,8 +967,8 @@ void main_loop()
                 {
                     if(num_voxels < max_voxels)
                     {
-                        voxels[num_voxels].w = sb;
                         voxels[num_voxels] = pb;
+                        voxels[num_voxels].w = sb;
                         num_voxels++;
                     }
                     else
@@ -977,8 +977,8 @@ void main_loop()
                         {
                             if(voxels[i].w < 0.f)
                             {
-                                voxels[i].w = sb;
                                 voxels[i] = pb;
+                                voxels[i].w = sb;
                                 break;
                             }
                         }
@@ -1044,8 +1044,8 @@ void main_loop()
                 {
                     if(num_voxels < max_voxels)
                     {
-                        voxels[num_voxels].w = sb;
                         voxels[num_voxels] = pb;
+                        voxels[num_voxels].w = sb;
                         num_voxels++;
                     }
                     else
@@ -1054,8 +1054,8 @@ void main_loop()
                         {
                             if(voxels[i].w < 0.f)
                             {
-                                voxels[i].w = sb;
                                 voxels[i] = pb;
+                                voxels[i].w = sb;
                                 break;
                             }
                         }
