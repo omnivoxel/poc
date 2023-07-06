@@ -812,7 +812,6 @@ vec look_dir; // camera look direction
 
 // player vars
 vec pp = (vec){0.f, 4.f, 0.f}; // player position
-float cx=0.f,cy=0.f; // grid cell location
 float move_speed = 9.3f;
 vec pb; // place block pos
 float sb = 13.f; // selected block
