@@ -967,13 +967,13 @@ void main_loop()
                 {
                     sb += 1.f;
                     if(sb == 10.f){sb++;}
-                    if(sb > 30.f){sb = 30.f;}
+                    if(sb > 30.f){sb = 0.f;}
                 }
                 else if(event.wheel.y < 0)
                 {
                     sb -= 1.f;
                     if(sb == 10.f){sb--;}
-                    if(sb < 0.f){sb = 0.f;}
+                    if(sb < 0.f){sb = 30.f;}
                 }
             }
             break;
