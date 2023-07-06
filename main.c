@@ -815,7 +815,7 @@ vec pp = (vec){0.f, 4.f, 0.f}; // player position
 float cx=0.f,cy=0.f; // grid cell location
 float move_speed = 6.3f;
 vec pb; // place block pos
-float sb; // selected block
+float sb = 13.f; // selected block
 
 // render state id's
 GLint projection_id;
@@ -1055,6 +1055,7 @@ void main_loop()
                 }
                 else if(event.button.button == SDL_BUTTON_RIGHT)
                 {
+                    pb = (vec){0.f, 0.f, 0.f};
                     vec ipp = pp;
                     vInv(&ipp);
                     const int b = ray(&pb, 100, 0.25f, ipp);
@@ -1278,6 +1279,10 @@ void main_loop()
             if(rpif == 1){pb = rp;}
         }
     }
+    // else
+    // {
+    //     pb = (vec){0.f, 0.f, 0.f};
+    // }
 
     if(vSumAbs(pb) > 0.f)
     {
