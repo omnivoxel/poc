@@ -944,6 +944,14 @@ void main_loop()
                     focus_mouse = 0;
                     SDL_ShowCursor(1);
                 }
+                else if(event.key.keysym.sym == SDLK_1)
+                {
+                    pb = (vec){0.f, 0.f, 0.f};
+                    vec ipp = pp;
+                    vInv(&ipp);
+                    const int b = ray(&pb, 100, 0.25f, ipp);
+                    if(b > -1){sb = voxels[b].w;}
+                }
                 else if(event.key.keysym.sym == SDLK_2) // - change selected node
                 {
                     sb -= 1.f;
@@ -1068,6 +1076,14 @@ void main_loop()
                     vInv(&ipp);
                     const int b = ray(&pb, 100, 0.25f, ipp);
                     if(b > 0){voxels[b].w = -1.f;}
+                }
+                else if(event.button.button == SDL_BUTTON_MIDDLE) // remove pointed voxel
+                {
+                    pb = (vec){0.f, 0.f, 0.f};
+                    vec ipp = pp;
+                    vInv(&ipp);
+                    const int b = ray(&pb, 100, 0.25f, ipp);
+                    if(b > -1){sb = voxels[b].w;}
                 }
                 else if(event.button.button == SDL_BUTTON_X1) // change movement speeds
                 {
@@ -1338,6 +1354,7 @@ int main(int argc, char** argv)
     printf("E / Left Click = Place node.\n");
     printf("Q / Right Click = Delete pointed node.\n");
     printf("F / Mouse4 Click = Toggle player fast speed on and off.\n");
+    printf("1 / Middle Click = Sets selected node to the same one you are pointing at.\n");
     printf("Arrow Keys can be used to move view around.\n");
     printf("\n");
 
